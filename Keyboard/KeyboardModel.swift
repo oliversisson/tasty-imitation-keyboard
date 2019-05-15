@@ -140,8 +140,8 @@ class Key: Hashable {
     func setLetter(_ letter: String) {
         self.lowercaseOutput = letter.lowercased()
         self.uppercaseOutput = letter.uppercased()
-        self.lowercaseKeyCap = self.lowercaseOutput
-        self.uppercaseKeyCap = self.uppercaseOutput
+        self.lowercaseKeyCap = String(self.lowercaseOutput!.prefix(1))
+        self.uppercaseKeyCap = String(self.uppercaseOutput!.prefix(1))
     }
     
     func outputForCase(_ uppercase: Bool) -> String {

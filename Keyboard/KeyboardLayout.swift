@@ -498,9 +498,11 @@ class KeyboardLayout: NSObject, KeyboardKeyProtocol {
     func updateKeyCapText(_ key: KeyboardKey, model: Key, uppercase: Bool, characterUppercase: Bool) {
         if model.type == .character {
             key.text = model.keyCapForCase(characterUppercase)
+            key.labels = model.outputForCase(characterUppercase)
         }
         else {
             key.text = model.keyCapForCase(uppercase)
+            key.labels = model.outputForCase(characterUppercase)
         }
     }
     
@@ -1004,14 +1006,14 @@ class KeyboardLayout: NSObject, KeyboardKeyProtocol {
     // END LAYOUT //
     ////////////////
     
-    func popupFrame(for key: KeyboardKey, direction: Direction) -> CGRect {
+    func popupFrame(for key: KeyboardKey, direction: Direction, labelsCount: Int) -> CGRect {
         let actualScreenWidth = (UIScreen.main.nativeBounds.size.width / UIScreen.main.nativeScale)
         let totalHeight = self.layoutConstants.popupTotalHeight(actualScreenWidth)
         
-        let popupWidth = key.bounds.width + self.layoutConstants.popupWidthIncrement
+        let popupWidth = (key.bounds.width + self.layoutConstants.popupWidthIncrement)*CGFloat(labelsCount)
         let popupHeight = totalHeight - self.layoutConstants.popupGap - key.bounds.height
         
-        return CGRect(x: (key.bounds.width - popupWidth) / CGFloat(2), y: -popupHeight - self.layoutConstants.popupGap, width: popupWidth, height: popupHeight)
+        return CGRect(x: (-self.layoutConstants.popupWidthIncrement) / CGFloat(2), y: -popupHeight - self.layoutConstants.popupGap, width: popupWidth, height: popupHeight)
     }
     
     func willShowPopup(for key: KeyboardKey, direction: Direction) {

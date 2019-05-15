@@ -28,10 +28,13 @@ class Catboard: KeyboardViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func keyPressed(_ key: Key) {
+    override func keyPressed(_ key: Key, charIndex: Int?) {
         let textDocumentProxy = self.textDocumentProxy
         
-        let keyOutput = key.outputForCase(self.shiftState.uppercase())
+        var keyOutput = key.outputForCase(self.shiftState.uppercase())
+        if let charIndexNotNil = charIndex {
+            keyOutput = String(keyOutput.prefix(charIndexNotNil + 1).suffix(1))
+        }
         
         if !UserDefaults.standard.bool(forKey: kCatTypeEnabled) {
             textDocumentProxy.insertText(keyOutput)

@@ -13,7 +13,7 @@ import UIKit
 
 // popup constraints have to be setup with the topmost view in mind; hence these callbacks
 protocol KeyboardKeyProtocol: class {
-    func popupFrame(for key: KeyboardKey, direction: Direction) -> CGRect
+    func popupFrame(for key: KeyboardKey, direction: Direction, labelsCount: Int) -> CGRect
     func willShowPopup(for key: KeyboardKey, direction: Direction) //may be called multiple times during layout
     func willHidePopup(for key: KeyboardKey)
 }
@@ -37,7 +37,9 @@ class KeyboardKey: UIControl {
             self.redrawText()
         }
     }
-    
+
+    var labels: String
+
     var color: UIColor { didSet { updateColors() }}
     var underColor: UIColor { didSet { updateColors() }}
     var borderColor: UIColor { didSet { updateColors() }}
@@ -91,7 +93,8 @@ class KeyboardKey: UIControl {
     }
     
     var label: UILabel
-    var popupLabel: UILabel?
+    var popupLabels: [UILabel] = []
+    var popupLabelSelected: Int? = nil
     var shape: Shape? {
         didSet {
             if oldValue != nil && shape == nil {
@@ -124,6 +127,7 @@ class KeyboardKey: UIControl {
         self.shadowView = UIView()
         
         self.label = UILabel()
+        self.labels = ""
         self.text = ""
         
         self.color = UIColor.white
@@ -136,12 +140,12 @@ class KeyboardKey: UIControl {
         self.underOffset = 1
         
         self.background = KeyboardKeyBackground(cornerRadius: 4, underOffset: self.underOffset)
-        
+
         self.textColor = UIColor.black
         self.popupDirection = nil
-        
+
         super.init(frame: CGRect.zero)
-        
+
         self.addSubview(self.shadowView)
         self.shadowView.layer.addSublayer(self.shadowLayer)
         
@@ -314,6 +318,7 @@ class KeyboardKey: UIControl {
     func redrawShape() {
         if let shape = self.shape {
             self.text = ""
+            self.labels = ""
             shape.removeFromSuperview()
             self.addSubview(shape)
             
@@ -359,12 +364,16 @@ class KeyboardKey: UIControl {
             
             if let downTextColor = self.downTextColor {
                 self.label.textColor = downTextColor
-                self.popupLabel?.textColor = downTextColor
+                for popupLabel in self.popupLabels {
+                    popupLabel.textColor = downTextColor
+                }
                 self.shape?.color = downTextColor
             }
             else {
                 self.label.textColor = self.textColor
-                self.popupLabel?.textColor = self.textColor
+                for popupLabel in self.popupLabels {
+                    popupLabel.textColor = self.textColor
+                }
                 self.shape?.color = self.textColor
             }
         }
@@ -376,7 +385,9 @@ class KeyboardKey: UIControl {
             self.borderView?.strokeColor = self.borderColor
             
             self.label.textColor = self.textColor
-            self.popupLabel?.textColor = self.textColor
+            for popupLabel in self.popupLabels {
+                popupLabel.textColor = self.textColor
+            }
             self.shape?.color = self.textColor
         }
         
@@ -392,9 +403,19 @@ class KeyboardKey: UIControl {
         
         if let popup = self.popup {
             if let delegate = self.delegate {
-                let frame = delegate.popupFrame(for: self, direction: dir)
+                let labelsCount = self.popupLabels.count
+                let frame = delegate.popupFrame(for: self, direction: dir, labelsCount: labelsCount)
                 popup.frame = frame
-                popupLabel?.frame = popup.bounds
+
+                var slice: CGRect
+                var remainder = popup.bounds
+                let atDistance = popup.bounds.width / CGFloat(labelsCount)
+
+                for popupLabel in self.popupLabels {
+                    //popupLabel.frame = popup.bounds
+                    (slice, remainder) = remainder.divided(atDistance: atDistance, from: .minXEdge)
+                    popupLabel.frame = slice.insetBy(dx: 10.0, dy: 5.0)
+                }
             }
             else {
                 popup.frame = CGRect.zero
@@ -429,22 +450,26 @@ class KeyboardKey: UIControl {
         if self.popup == nil {
             self.layer.zPosition = 1000
             
-            let popup = KeyboardKeyBackground(cornerRadius: 9.0, underOffset: self.underOffset)
-            self.popup = popup
-            self.addSubview(popup)
+            self.popup = KeyboardKeyBackground(cornerRadius: 9.0, underOffset: self.underOffset)
+            self.addSubview(self.popup!)
             
-            let popupLabel = UILabel()
-            popupLabel.textAlignment = self.label.textAlignment
-            popupLabel.baselineAdjustment = self.label.baselineAdjustment
-            popupLabel.font = self.label.font.withSize(22 * 2)
-            popupLabel.adjustsFontSizeToFitWidth = self.label.adjustsFontSizeToFitWidth
-            popupLabel.minimumScaleFactor = CGFloat(0.1)
-            popupLabel.isUserInteractionEnabled = false
-            popupLabel.numberOfLines = 1
-            popupLabel.frame = popup.bounds
-            popupLabel.text = self.label.text
-            popup.addSubview(popupLabel)
-            self.popupLabel = popupLabel
+            for char in self.labels {
+                let popupLabel = UILabel()
+                popupLabel.textAlignment = self.label.textAlignment
+                popupLabel.baselineAdjustment = self.label.baselineAdjustment
+                popupLabel.font = self.label.font.withSize(36)
+                popupLabel.adjustsFontSizeToFitWidth = self.label.adjustsFontSizeToFitWidth
+                popupLabel.minimumScaleFactor = CGFloat(0.1)
+                popupLabel.isUserInteractionEnabled = false
+                popupLabel.numberOfLines = 1
+                //popupLabel.frame = popup.bounds
+                popupLabel.text = "\(char)"
+                popupLabel.layer.masksToBounds = true
+                popupLabel.layer.cornerRadius = 5.0
+                self.popup!.addSubview(popupLabel)
+                self.popupLabels.append(popupLabel)
+                self.selectPopupLabel(popupLabelSelected: 0)
+            }
             
             self.label.isHidden = true
         }
@@ -454,8 +479,10 @@ class KeyboardKey: UIControl {
         if self.popup != nil {
             self.delegate?.willHidePopup(for: self)
             
-            self.popupLabel?.removeFromSuperview()
-            self.popupLabel = nil
+            for popupLabel in self.popupLabels {
+                popupLabel.removeFromSuperview()
+            }
+            self.popupLabels = []
             
             self.connector?.removeFromSuperview()
             self.connector = nil
@@ -470,6 +497,30 @@ class KeyboardKey: UIControl {
             
             self.popupDirection = nil
         }
+    }
+
+    func selectPopupLabel(popupLabelSelected: Int) {
+        // (rgb: 0xADD8E6)
+
+        if popupLabelSelected < 0 || popupLabelSelected >= self.popupLabels.count {
+            return
+        }
+
+        if self.popupLabels.count == 1 {
+            return
+        }
+
+        if let oldPopupLabelSelected = self.popupLabelSelected {
+            let oldPopupLabel = self.popupLabels[oldPopupLabelSelected]
+            oldPopupLabel.backgroundColor = UIColor.white.withAlphaComponent(0.0)
+            oldPopupLabel.textColor = UIColor.black
+        }
+
+        self.popupLabelSelected = popupLabelSelected
+
+        let popupLabel = self.popupLabels[popupLabelSelected]
+        popupLabel.backgroundColor = UIColor.blue.withAlphaComponent(0.7) // (rgb: 0xADD8E6)
+        popupLabel.textColor = UIColor.white
     }
 }
 

@@ -481,7 +481,7 @@ class KeyboardViewController: UIInputViewController {
     
     func keyPressedHelper(_ sender: KeyboardKey) {
         if let model = self.layout?.keyForView(sender) {
-            self.keyPressed(model)
+            self.keyPressed(model, charIndex: sender.popupLabelSelected)
 
             // auto exit from special char subkeyboard
             if model.type == Key.KeyType.space || model.type == Key.KeyType.return {
@@ -849,7 +849,7 @@ class KeyboardViewController: UIInputViewController {
     class var layoutConstants: LayoutConstants.Type { get { return LayoutConstants.self }}
     class var globalColors: GlobalColors.Type { get { return GlobalColors.self }}
     
-    func keyPressed(_ key: Key) {
+    func keyPressed(_ key: Key, charIndex: Int?) {
         self.textDocumentProxy.insertText(key.outputForCase(self.shiftState.uppercase()))
     }
     

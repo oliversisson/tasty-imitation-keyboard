@@ -50,7 +50,6 @@ class ForwardingView: UIView {
                         let selector = Selector(selectorString)
                         control.sendAction(selector, to: target, for: nil)
                     }
-                    
                 }
             }
         }
@@ -74,6 +73,24 @@ class ForwardingView: UIView {
             
             let distance = distanceBetween(view.frame, point: position)
             
+            if let keyboardKey = view as? KeyboardKey {
+                if let popup = keyboardKey.popup {
+                    let rect = CGRect(
+                        x: view.frame.origin.x + popup.frame.origin.x,
+                        y: view.frame.origin.y - popup.frame.height,
+                        width: popup.frame.width,
+                        height: view.frame.height + popup.frame.height
+                    )
+                    let popupDistance = distanceBetween(rect, point: position)
+                    if popupDistance == 0 {
+                        let count = CGFloat(keyboardKey.popupLabels.count)
+                        let labelIndex = Int(count * (position.x - rect.origin.x) / rect.width)
+                        keyboardKey.selectPopupLabel(popupLabelSelected: labelIndex)
+                        return view
+                    }
+                }
+            }
+
             if closest != nil {
                 if distance < closest!.1 {
                     closest = (view, distance)

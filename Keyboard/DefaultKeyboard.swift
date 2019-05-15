@@ -8,14 +8,14 @@
 
 func defaultKeyboard() -> Keyboard {
     let defaultKeyboard = Keyboard()
-    
-    for key in ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"] {
+
+    for key in ["Q", "W", "EÉÈÊË", "R", "T", "YŸ", "UÙÛÜ", "IÎÏ", "OÔŒ", "P"] {
         let keyModel = Key(.character)
         keyModel.setLetter(key)
         defaultKeyboard.add(key: keyModel, row: 0, page: 0)
     }
     
-    for key in ["A", "S", "D", "F", "G", "H", "J", "K", "L"] {
+    for key in ["AÀÂÆ", "S", "D", "F", "G", "H", "J", "K", "L"] {
         let keyModel = Key(.character)
         keyModel.setLetter(key)
         defaultKeyboard.add(key: keyModel, row: 1, page: 0)
@@ -24,7 +24,7 @@ func defaultKeyboard() -> Keyboard {
     let keyModel = Key(.shift)
     defaultKeyboard.add(key: keyModel, row: 2, page: 0)
     
-    for key in ["Z", "X", "C", "V", "B", "N", "M"] {
+    for key in ["Z", "X", "CÇ", "V", "B", "N", "M"] {
         let keyModel = Key(.character)
         keyModel.setLetter(key)
         defaultKeyboard.add(key: keyModel, row: 2, page: 0)
