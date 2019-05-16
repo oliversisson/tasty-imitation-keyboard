@@ -14,7 +14,7 @@ enum ShiftState {
     case disabled
     case enabled
     case locked
-    
+
     func uppercase() -> Bool {
         switch self {
         case .disabled:
@@ -29,21 +29,21 @@ enum ShiftState {
 
 class Keyboard {
     var pages: [Page] = []
-    
+
     func add(key: Key, row: Int, page: Int) {
         if self.pages.count <= page {
             for _ in self.pages.count...page {
                 self.pages.append(Page())
             }
         }
-        
+
         self.pages[page].add(key: key, row: row)
     }
 }
 
 class Page {
     var rows: [[Key]] = []
-    
+
     func add(key: Key, row: Int) {
         if self.rows.count <= row {
             for _ in self.rows.count...row {
@@ -69,14 +69,14 @@ class Key: Hashable {
         case settings
         case other
     }
-    
+
     var type: KeyType
     var uppercaseKeyCap: String?
     var lowercaseKeyCap: String?
     var uppercaseOutput: String?
     var lowercaseOutput: String?
     var toMode: Int? //if the key is a mode button, this indicates which page it links to
-    
+
     var isCharacter: Bool {
         get {
             switch self.type {
@@ -90,7 +90,7 @@ class Key: Hashable {
             }
         }
     }
-    
+
     var isSpecial: Bool {
         get {
             switch self.type {
@@ -111,39 +111,39 @@ class Key: Hashable {
             }
         }
     }
-    
+
     var hasOutput: Bool {
         get {
             return (self.uppercaseOutput != nil) || (self.lowercaseOutput != nil)
         }
     }
-    
+
     // TODO: this is kind of a hack
     var hashValue: Int
-    
+
     init(_ type: KeyType) {
         self.type = type
         self.hashValue = counter
         counter += 1
     }
-    
+
     convenience init(_ key: Key) {
         self.init(key.type)
-        
+
         self.uppercaseKeyCap = key.uppercaseKeyCap
         self.lowercaseKeyCap = key.lowercaseKeyCap
         self.uppercaseOutput = key.uppercaseOutput
         self.lowercaseOutput = key.lowercaseOutput
         self.toMode = key.toMode
     }
-    
+
     func setLetter(_ letter: String) {
         self.lowercaseOutput = letter.lowercased()
         self.uppercaseOutput = letter.uppercased()
         self.lowercaseKeyCap = String(self.lowercaseOutput!.prefix(1))
         self.uppercaseKeyCap = String(self.uppercaseOutput!.prefix(1))
     }
-    
+
     func outputForCase(_ uppercase: Bool) -> String {
         if uppercase {
             return uppercaseOutput ?? lowercaseOutput ?? ""
@@ -152,7 +152,7 @@ class Key: Hashable {
             return lowercaseOutput ?? uppercaseOutput ?? ""
         }
     }
-    
+
     func keyCapForCase(_ uppercase: Bool) -> String {
         if uppercase {
             return uppercaseKeyCap ?? lowercaseKeyCap ?? ""

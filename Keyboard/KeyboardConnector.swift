@@ -27,9 +27,9 @@ class KeyboardConnector: KeyboardKeyBackground {
     weak var endConnectable: Connectable?
     var convertedStartPoints: (CGPoint, CGPoint)!
     var convertedEndPoints: (CGPoint, CGPoint)!
-    
+
     var offset: CGPoint
-    
+
     // TODO: until bug is fixed, make sure start/end and startConnectable/endConnectable are the same object
     init(cornerRadius: CGFloat, underOffset: CGFloat, start s: UIView, end e: UIView, startConnectable sC: Connectable, endConnectable eC: Connectable, startDirection: Direction, endDirection: Direction) {
         start = s
@@ -43,7 +43,7 @@ class KeyboardConnector: KeyboardKeyBackground {
 
         super.init(cornerRadius: cornerRadius, underOffset: underOffset)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("NSCoding not supported")
     }
@@ -62,7 +62,7 @@ class KeyboardConnector: KeyboardKeyBackground {
         if self.startConnectable == nil || self.endConnectable == nil {
             return
         }
-        
+
         if let superview = self.superview {
             let startPoints = self.startConnectable!.attachmentPoints(self.startDir)
             let endPoints = self.endConnectable!.attachmentPoints(self.endDir)
@@ -88,15 +88,15 @@ class KeyboardConnector: KeyboardKeyBackground {
         let maxY = max(convertedStartPoints.0.y, convertedStartPoints.1.y, convertedEndPoints.0.y, convertedEndPoints.1.y)
         let width = maxX - minX
         let height = maxY - minY
-        
+
         self.frame = CGRect(x: minX - buffer/2, y: minY - buffer/2, width: width + buffer, height: height + buffer)
     }
-    
+
     override func generatePointsForDrawing(_ bounds: CGRect) {
         guard let startConnectable = startConnectable, let endConnectable = endConnectable else {
             return
         }
-        
+
         //////////////////
         // prepare data //
         //////////////////
@@ -118,7 +118,7 @@ class KeyboardConnector: KeyboardKeyBackground {
         }
 
         let path = CGMutablePath()
-        
+
         path.move(to: convertedStartPoints.0)
         path.addLine(to: convertedEndPoints.1)
         path.addLine(to: convertedEndPoints.0)
@@ -140,9 +140,9 @@ class KeyboardConnector: KeyboardKeyBackground {
         let bezierPath = UIBezierPath()
         var currentEdgePath = UIBezierPath()
         var edgePaths = [UIBezierPath]()
-        
+
         bezierPath.move(to: convertedStartPoints.0)
-        
+
         bezierPath.addCurve(
             to: convertedEndPoints.1,
             controlPoint1: (isVertical ?
@@ -151,7 +151,7 @@ class KeyboardConnector: KeyboardKeyBackground {
             controlPoint2: (isVertical ?
                 CGPoint(x: convertedEndPoints.1.x, y: midpoint) :
                 CGPoint(x: midpoint, y: convertedEndPoints.1.y)))
-        
+
         currentEdgePath = UIBezierPath()
         currentEdgePath.move(to: convertedStartPoints.0)
         currentEdgePath.addCurve(
@@ -164,9 +164,9 @@ class KeyboardConnector: KeyboardKeyBackground {
                 CGPoint(x: midpoint, y: convertedEndPoints.1.y)))
         currentEdgePath.apply(CGAffineTransform(translationX: 0, y: -self.underOffset))
         edgePaths.append(currentEdgePath)
-        
+
         bezierPath.addLine(to: convertedEndPoints.0)
-        
+
         bezierPath.addCurve(
             to: convertedStartPoints.1,
             controlPoint1: (isVertical ?
@@ -176,7 +176,7 @@ class KeyboardConnector: KeyboardKeyBackground {
                 CGPoint(x: convertedStartPoints.1.x, y: midpoint) :
                 CGPoint(x: midpoint, y: convertedStartPoints.1.y)))
         bezierPath.addLine(to: convertedStartPoints.0)
-        
+
         currentEdgePath = UIBezierPath()
         currentEdgePath.move(to: convertedEndPoints.0)
         currentEdgePath.addCurve(
@@ -189,12 +189,12 @@ class KeyboardConnector: KeyboardKeyBackground {
                 CGPoint(x: midpoint, y: convertedStartPoints.1.y)))
         currentEdgePath.apply(CGAffineTransform(translationX: 0, y: -self.underOffset))
         edgePaths.append(currentEdgePath)
-        
+
         bezierPath.addLine(to: convertedStartPoints.0)
-        
+
         bezierPath.close()
         bezierPath.apply(CGAffineTransform(translationX: 0, y: -self.underOffset))
-        
+
         self.fillPath = bezierPath
         self.edgePaths = edgePaths
     }

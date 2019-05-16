@@ -13,14 +13,14 @@ import UIKit
 //func memoize<T: Hashable, U>( body: ( (T)->U, T ) -> U ) -> (T) -> U {
 //    var memo = Dictionary<T, U>()
 //    var result: ((T)->U)!
-//    
+//
 //    result = { x in
 //        if let q = memo[x] { return q }
 //        let r = body(result, x)
 //        memo[x] = r
 //        return r
 //    }
-//    
+//
 //    return result
 //}
 
@@ -70,7 +70,7 @@ func memoize<T:Hashable, U>(_ fn : @escaping (T) -> U) -> (T) -> U {
 var profile: ((_ id: String) -> Double?) = {
     var counterForName = Dictionary<String, Double>()
     var isOpen = Dictionary<String, Double>()
-    
+
     return { (id: String) -> Double? in
         if let startTime = isOpen[id] {
             let diff = CACurrentMediaTime() - startTime
@@ -80,13 +80,13 @@ var profile: ((_ id: String) -> Double?) = {
             else {
                 counterForName[id] = diff
             }
-            
+
             isOpen[id] = nil
         }
         else {
             isOpen[id] = CACurrentMediaTime()
         }
-        
+
         return counterForName[id]
     }
 }()
