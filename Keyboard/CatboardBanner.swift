@@ -64,4 +64,8 @@ class CatboardBanner: ExtraView {
 
         self.catLabel.sizeToFit()
     }
+
+    @objc func respondToSelect(sender:UIButton) {
+        delegate?.selectSuggestion(sender.tag)
+    }
 }
